@@ -62,9 +62,9 @@ tr:hover td{background:var(--surface2)}
     <p>Management System</p>
   </div>
   <a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">Dashboard</a>
-<a href="/properties" class="nav-link {% if '/properties' in request.path %}active{% endif %}">Properties</a>
-<a href="/tenants" class="nav-link {% if '/tenants' in request.path %}active{% endif %}">Tenants</a>
-<a href="/maintenance" class="nav-link {% if '/maintenance' in request.path %}active{% endif %}">Maintenance</a>
+  <a href="/properties" class="nav-link {% if '/properties' in request.path %}active{% endif %}">Properties</a>
+  <a href="/tenants" class="nav-link {% if '/tenants' in request.path %}active{% endif %}">Tenants</a>
+  <a href="/maintenance" class="nav-link {% if '/maintenance' in request.path %}active{% endif %}">Maintenance</a>
 </aside>
 <main class="main">
   {% block content %}{% endblock %}
