@@ -2,9 +2,8 @@
 {% block content %}
 <div class="page-header">
   <h1 class="page-title">Dashboard</h1>
-  <button class="btn btn-primary" onclick="runAutomation()">▶ Run Automation Now</button>
+  <button class="btn btn-primary" onclick="runAutomation()">&#9654; Run Automation Now</button>
 </div>
-
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px">
   <div class="card" style="border-top:3px solid var(--accent)">
     <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Properties</div>
@@ -23,10 +22,9 @@
     <div style="font-size:36px;font-family:'DM Serif Display',serif;margin-top:8px">{{ emails_sent }}</div>
   </div>
 </div>
-
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
   <div class="card">
-    <h3 style="font-size:14px;margin-bottom:16px;color:var(--muted)">⚠️ Leases Expiring Soon</h3>
+    <h3 style="font-size:14px;margin-bottom:16px;color:var(--muted)">&#9888; Leases Expiring Soon</h3>
     {% if expiring_leases %}
     <table>
       <tr><th>Tenant</th><th>Lease End</th></tr>
@@ -41,16 +39,15 @@
     <p style="color:var(--muted);font-size:13px">No leases expiring in the next 90 days.</p>
     {% endif %}
   </div>
-
   <div class="card">
-    <h3 style="font-size:14px;margin-bottom:16px;color:var(--muted)">📧 Recent Emails</h3>
+    <h3 style="font-size:14px;margin-bottom:16px;color:var(--muted)">&#128139; Recent Emails</h3>
     {% if recent_emails %}
     <table>
       <tr><th>To</th><th>Subject</th><th>Status</th></tr>
       {% for e in recent_emails %}
       <tr>
         <td style="color:var(--muted)">{{ e.to_email }}</td>
-        <td>{{ e.subject[:30] }}{% if e.subject|length > 30 %}…{% endif %}</td>
+        <td>{{ e.subject[:30] }}{% if e.subject|length > 30 %}...{% endif %}</td>
         <td><span class="badge {% if e.status == 'sent' %}badge-green{% else %}badge-red{% endif %}">{{ e.status }}</span></td>
       </tr>
       {% endfor %}
@@ -60,7 +57,6 @@
     {% endif %}
   </div>
 </div>
-
 <script>
 async function runAutomation(){
   showToast('Running automation...');
