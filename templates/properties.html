@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Properties</h1>
+  <button class="btn btn-primary" onclick="document.getElementById('addModal').classList.add('open')">+ Add Property</button>
+</div>
+
+<div class="card">
+  {% if properties %}
+  <table>
+    <tr><th>Name</th><th>Address</th><th>Unit</th><th>Tenants</th><th>Notes</th><th></th></tr>
+    {% for p in properties %}
+    <tr>
+      <td><strong>{{ p.name }}</strong></td>
+      <td>{{ p.address }}</td>
+      <td>{{ p.unit or '—' }}</td>
+      <td><span class="badge badge-purple">{{ p.tenant_count }} tenant{% if p.tenant_count != 1 %}s{% endif %}</span></td>
+      <td style="color:var(--muted)">{{ p.notes or '—' }}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteProperty({{ p.id }})">Remove</button></td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p style="color:var(--muted);text-align:center;padding:40px">No properties yet. Click "Add Property" to get started!</p>
+  {% endif %}
+</div>
+
+<div id="addModal" class="modal-bg" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <h2>Add Property</h2>
+    <div class="form-group"><label>Property Name *</label><input id="p-name" placeholder="e.g. Sunset Apartments"></div>
+    <div class="form-group"><label>Full Address *</label><input id="p-address" placeholder="e.g. 123 Rizal St, Quezon City"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Unit Number</label><input id="p-unit" placeholder="e.g. Unit 2A"></div>
+      <div class="form-group"><label>Notes</label><input id="p-notes" placeholder="Optional notes"></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+      <button class="btn" style="background:var(--surface2)" onclick="document.getElementById('addModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" onclick="addProperty()">Add Property</button>
+    </div>
+  </div>
+</div>
+
+<script>
+async function addProperty(){
+  const name=document.getElementById('p-name').value.trim();
+  const address=document.getElementById('p-address').value.trim();
+  if(!name||!address){showToast('Name and address are required',false);return;}
+  const r=await post('/properties/add',{name,address,unit:document.getElementById('p-unit').value,notes:document.getElementById('p-notes').value});
+  if(r.success){showToast('Property added!');setTimeout(()=>location.reload(),1000);}
+}
+async function deleteProperty(id){
+  if(!confirm('Remove this property?'))return;
+  const r=await post('/properties/delete/'+id,{});
+  if(r.success){showToast('Property removed!');setTimeout(()=>location.reload(),1000);}
+}
+</script>
+{% endblock %}

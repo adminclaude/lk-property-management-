@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Maintenance</h1>
+  <button class="btn btn-primary" onclick="document.getElementById('addModal').classList.add('open')">+ Add Task</button>
+</div>
+
+<div class="card">
+  {% if tasks %}
+  <table>
+    <tr><th>Property</th><th>Description</th><th>Tenant</th><th>Reported</th><th>Status</th><th></th></tr>
+    {% for t in tasks %}
+    <tr>
+      <td><strong>{{ t.property_name or t.address or '—' }}</strong></td>
+      <td>{{ t.description }}</td>
+      <td style="color:var(--muted)">{{ t.tenant_name or '—' }}</td>
+      <td style="color:var(--muted)">{{ t.date_reported }}</td>
+      <td><span class="badge {% if t.status == 'open' %}badge-red{% else %}badge-green{% endif %}">{{ t.status }}</span></td>
+      <td>{% if t.status == 'open' %}<button class="btn btn-success btn-sm" onclick="resolve({{ t.id }})">Resolve</button>{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p style="color:var(--muted);text-align:center;padding:40px">No maintenance tasks yet.</p>
+  {% endif %}
+</div>
+
+<div id="addModal" class="modal-bg" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <h2>Add Maintenance Task</h2>
+    <div class="form-group"><label>Property *</label>
+      <select id="m-prop">
+        <option value="">Select property...</option>
+        {% for p in properties %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-group"><label>Issue Description *</label>
+      <textarea id="m-desc" rows="3" placeholder="Describe the maintenance issue..." style="resize:vertical"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+      <button class="btn" style="background:var(--surface2)" onclick="document.getElementById('addModal').classList.remove('open')">Cancel</button>
+      <button class="btn btn-primary" onclick="addTask()">Add Task</button>
+    </div>
+  </div>
+</div>
+
+<script>
+async function addTask(){
+  const prop=document.getElementById('m-prop').value;
+  const desc=document.getElementById('m-desc').value.trim();
+  if(!prop||!desc){showToast('Please fill in all fields',false);return;}
+  const r=await post('/maintenance/add',{property_id:parseInt(prop),description:desc});
+  if(r.success){showToast('Task added!');setTimeout(()=>location.reload(),1000);}
+}
+async function resolve(id){
+  if(!confirm('Mark this task as resolved?'))return;
+  const r=await post('/maintenance/resolve/'+id,{});
+  if(r.success){showToast('Task resolved!');setTimeout(()=>location.reload(),1000);}
+}
+</script>
+{% endblock %}
