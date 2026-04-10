@@ -1248,7 +1248,49 @@ def api_delete_bill(bid):
 
 setup_database()
 seed_templates()
-
+@app.route("/import-notion-bills")
+def import_notion_bills():
+    import csv, os
+    CSV_FILE = "notion_bills.csv"
+    if not os.path.exists(CSV_FILE):
+        return "CSV file not found!", 404
+    import re
+    STATUS_MAP = {"Paid":"paid","Upcoming":"unpaid","Unpaid":"unpaid","Scheduled":"unpaid","Pending":"unpaid","TBD":"unpaid","Expired":"paid","Inactive":"paid","Canceled":"paid","Sold":"paid","NA":"paid","Transferred to Tenant":"paid","Transferred back to Owner":"unpaid","":"unpaid"}
+    CATEGORY_MAP = {"Mortgage":"mortgage","LOAN(HELOC)":"mortgage","Seller Finance Loan":"mortgage","PML":"mortgage","Insurance":"insurance","Property Tax":"taxes","School Tax":"taxes","Bond Bill Debt":"taxes","Electric":"utilities","Gas":"utilities","Natural Gas":"utilities","Propane Gas":"utilities","Water":"utilities","Sewer":"utilities","Sewer, Water":"utilities","Sewer, Utilities, Water":"utilities","Domestic, Water":"utilities","Fire Protection, Water":"utilities","Electric, Water":"utilities","Water-Well":"utilities","Sewer, Water-FREE":"utilities","Wifi":"utilities"}
+    def clean_amount(v):
+        if not v: return 0.0
+        try: return float(re.sub(r'[^\d.]','',v))
+        except: return 0.0
+    def clean_date(v):
+        if not v or v.strip() in ("","No Date"): return ""
+        m = re.match(r'^(\d{1,2})/(\d{1,2})/(\d{4})$', v.strip())
+        return f"{m.group(3)}-{int(m.group(1)):02d}-{int(m.group(2)):02d}" if m else v.strip()
+    conn = get_conn()
+    imported = 0
+    with open(CSV_FILE, encoding='utf-8-sig') as f:
+        for row in csv.DictReader(f):
+            prop = row.get('Property Name','').strip()
+            if prop:
+                pid = conn.execute("SELECT id FROM properties WHERE LOWER(name)=LOWER(?)",(prop,)).fetchone()
+                if not pid:
+                    cur = conn.execute("INSERT INTO properties (name,address) VALUES (?,?)",(prop,prop))
+                    pid = cur.lastrowid
+                else:
+                    pid = pid[0]
+            else:
+                pid = None
+            ptype = row.get('Payment Type','').strip()
+            provider = row.get('Provider','').strip()
+            desc = (ptype or 'Bill') + (f' - {provider}' if provider else '')
+            notes = ' | '.join(filter(None,[row.get('Billing Details','').strip(),row.get('Notes','').strip(),row.get('Account/Loan Number','').strip()]))[:500]
+            amount = clean_amount(row.get('Amount Due','')) or clean_amount(row.get('Last Paid Amount',''))
+            status = STATUS_MAP.get(row.get('Payment Status','').strip(),'unpaid')
+            category = CATEGORY_MAP.get(ptype,'other')
+            due = clean_date(row.get('Due Date','')) or clean_date(row.get('Next Bill Date',''))
+            conn.execute("INSERT INTO bills (property_id,description,amount,due_date,status,category,notes) VALUES (?,?,?,?,?,?,?)",(pid,desc,amount,due,status,category,notes))
+            imported += 1
+    conn.commit(); conn.close()
+    return f"✅ Successfully imported {imported} bills! <a href='/'>Go to app</a>"
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=False, host="0.0.0.0", port=port)
