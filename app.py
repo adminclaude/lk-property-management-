@@ -1171,7 +1171,7 @@ def api_toggle_step():
             "SELECT id FROM checklist_steps_done WHERE run_id=? AND step_index=?",
             (d["run_id"], d["step_index"])).fetchone()
         if ex:
-            conn.execute("DELETE FROM checklist_steps_done WHERE run_id=? AND step_index=?", (d["run_id"], d["step_index"]])
+            conn.execute("DELETE FROM checklist_steps_done WHERE run_id=? AND step_index=?", (d["run_id"], d["step_index"]))
         else:
             conn.execute("INSERT INTO checklist_steps_done (run_id, step_index) VALUES (?, ?)", (d["run_id"], d["step_index"]))
         conn.commit(); conn.close()
