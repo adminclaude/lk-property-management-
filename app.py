@@ -63,7 +63,6 @@ def setup_database():
     conn.close()
     print("Database ready.")
 
-# Seed default checklist templates
 def seed_templates():
     conn = get_conn()
     if conn.execute("SELECT COUNT(*) FROM checklist_templates").fetchone()[0] > 0:
@@ -549,7 +548,7 @@ async function loadTenants() {
     var el = document.getElementById('tenants-table');
     if (!d.length) { el.innerHTML = '<div class="empty">No tenants yet. Add a property first, then add tenants!</div>'; return; }
     el.innerHTML = '<table><tr><th>Name</th><th>Property</th><th>Email</th><th>Phone</th><th>Rent (PHP)</th><th>Due Day</th><th>Lease End</th><th></th></tr>' +
-      d.map(function(t) { return '<tr><td><strong>' + t.full_name + '</strong></td><td style="color:var(--muted)">' + (t.property_name||'-') + '</td><td style="color:var(--muted)">' + t.email + '</td><td style="color:var(--muted)">' + (t.phone||'-') + '</td><td>' + Number(t.rent_amount).toLocaleString() + '</td><td>' + t.rent_due_day + '</td><td>' + (t.lease_end ? '<span class="badge badge-amber">'+t.lease_end+'</span>' : '-') + '</td><td style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" onclick="openEditTenant(' + t.id + ')">Edit</button><button class="btn btn-danger btn-sm" onclick="deactivateTenant(' + t.id + ')">Move Out</button></td></tr>'; }).join('') + '</table>';
+      d.map(function(t) { return '<tr><td><strong>' + t.full_name + '</strong></td><td style="color:var(--muted)">' + (t.property_name||'-') + '</td><td style="color:var(--muted)">' + t.email + '</td><td style="color:var(--muted)">' + (t.phone||'-') + '</td><td>' + Number(t.rent_amount).toLocaleString() + '</td><td>' + t.rent_due_day + '</td><td>' + (t.lease_end ? '<span class="badge badge-amber">'+t.lease_end+'</span>' : '-') + '</td><td style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" onclick="openEditTenant(' + t.id + ')">Edit</button><button class="btn btn-danger btn-sm" onclick="deactivateTenant(' + t.id + ')">Move Out</button><button class="btn btn-danger btn-sm" onclick="deleteTenant(' + t.id + ')">Delete</button></td></tr>'; }).join('') + '</table>';
   } catch(e) {}
 }
 
@@ -606,6 +605,15 @@ async function deactivateTenant(id) {
   try {
     var r = await api('/api/tenants/deactivate/' + id, {});
     if (r.success) { showToast('Tenant deactivated'); loadTenants(); }
+    else showToast(r.error || 'Error', false);
+  } catch(e) {}
+}
+
+async function deleteTenant(id) {
+  if (!confirm('Permanently delete this tenant? This cannot be undone.')) return;
+  try {
+    var r = await api('/api/tenants/delete/' + id, {});
+    if (r.success) { showToast('Tenant deleted'); loadTenants(); }
     else showToast(r.error || 'Error', false);
   } catch(e) {}
 }
@@ -981,6 +989,16 @@ def api_deactivate_tenant(tid):
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
+@app.route("/api/tenants/delete/<int:tid>", methods=["POST"])
+def api_delete_tenant(tid):
+    try:
+        conn = get_conn()
+        conn.execute("DELETE FROM tenants WHERE id=?", (tid,))
+        conn.commit(); conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)})
+
 @app.route("/api/maintenance")
 def api_maintenance():
     try:
@@ -1153,7 +1171,7 @@ def api_toggle_step():
             "SELECT id FROM checklist_steps_done WHERE run_id=? AND step_index=?",
             (d["run_id"], d["step_index"])).fetchone()
         if ex:
-            conn.execute("DELETE FROM checklist_steps_done WHERE run_id=? AND step_index=?", (d["run_id"], d["step_index"]))
+            conn.execute("DELETE FROM checklist_steps_done WHERE run_id=? AND step_index=?", (d["run_id"], d["step_index"]])
         else:
             conn.execute("INSERT INTO checklist_steps_done (run_id, step_index) VALUES (?, ?)", (d["run_id"], d["step_index"]))
         conn.commit(); conn.close()
