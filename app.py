@@ -1619,4 +1619,4 @@ def api_delete_bill(bid):
 if __name__ == "__main__":
     setup_database()
     webbrowser.open("http://127.0.0.1:5000")
-app.run(host='0.0.0.0', debug=False, port=5000)
+    app.run(debug=False, port=5000)

@@ -4,6 +4,7 @@
   <h1 class="page-title">Tenants</h1>
   <button class="btn btn-primary" onclick="document.getElementById('addModal').classList.add('open')">+ Add Tenant</button>
 </div>
+
 <div class="card">
   {% if tenants %}
   <table>
@@ -11,12 +12,12 @@
     {% for t in tenants %}
     <tr>
       <td><strong>{{ t.full_name }}</strong></td>
-      <td style="color:var(--muted)">{{ t.property_name or '-' }}</td>
+      <td style="color:var(--muted)">{{ t.property_name or '—' }}</td>
       <td style="color:var(--muted)">{{ t.email }}</td>
-      <td style="color:var(--muted)">{{ t.phone or '-' }}</td>
+      <td style="color:var(--muted)">{{ t.phone or '—' }}</td>
       <td>{{ "{:,.2f}".format(t.rent_amount) }}</td>
       <td>{{ t.rent_due_day }}</td>
-      <td>{% if t.lease_end %}<span class="badge badge-amber">{{ t.lease_end }}</span>{% else %}-{% endif %}</td>
+      <td>{% if t.lease_end %}<span class="badge badge-amber">{{ t.lease_end }}</span>{% else %}—{% endif %}</td>
       <td><button class="btn btn-danger btn-sm" onclick="deactivate({{ t.id }}, '{{ t.full_name }}')">Move Out</button></td>
     </tr>
     {% endfor %}
@@ -25,6 +26,7 @@
   <p style="color:var(--muted);text-align:center;padding:40px">No tenants yet. Add a property first, then add tenants!</p>
   {% endif %}
 </div>
+
 <div id="addModal" class="modal-bg" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal">
     <h2>Add Tenant</h2>
@@ -55,6 +57,7 @@
     </div>
   </div>
 </div>
+
 <script>
 async function addTenant(){
   const name=document.getElementById('t-name').value.trim();

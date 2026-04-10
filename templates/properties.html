@@ -4,6 +4,7 @@
   <h1 class="page-title">Properties</h1>
   <button class="btn btn-primary" onclick="document.getElementById('addModal').classList.add('open')">+ Add Property</button>
 </div>
+
 <div class="card">
   {% if properties %}
   <table>
@@ -12,9 +13,9 @@
     <tr>
       <td><strong>{{ p.name }}</strong></td>
       <td>{{ p.address }}</td>
-      <td>{{ p.unit or '-' }}</td>
+      <td>{{ p.unit or '—' }}</td>
       <td><span class="badge badge-purple">{{ p.tenant_count }} tenant{% if p.tenant_count != 1 %}s{% endif %}</span></td>
-      <td style="color:var(--muted)">{{ p.notes or '-' }}</td>
+      <td style="color:var(--muted)">{{ p.notes or '—' }}</td>
       <td><button class="btn btn-danger btn-sm" onclick="deleteProperty({{ p.id }})">Remove</button></td>
     </tr>
     {% endfor %}
@@ -23,6 +24,7 @@
   <p style="color:var(--muted);text-align:center;padding:40px">No properties yet. Click "Add Property" to get started!</p>
   {% endif %}
 </div>
+
 <div id="addModal" class="modal-bg" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal">
     <h2>Add Property</h2>
@@ -38,6 +40,7 @@
     </div>
   </div>
 </div>
+
 <script>
 async function addProperty(){
   const name=document.getElementById('p-name').value.trim();
