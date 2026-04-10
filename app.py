@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify
-import sqlite3, json
+import sqlite3, json, os
 from datetime import datetime, date
-import webbrowser
 
 try:
     from config import DATABASE_PATH, COMPANY_NAME, GMAIL_ADDRESS
@@ -1130,13 +1129,13 @@ function generateAi(type){
     const ded=parseFloat(document.getElementById('ai-dr-deduct').value)||0;
     const reasons=document.getElementById('ai-dr-reasons').value;
     const refund=Math.max(0,dep-ded);
-    text=`SECURITY DEPOSIT RETURN LETTER\n\nDate: ${td}\n\nTo: ${tenant}\nRe: Security Deposit Return – ${prop}\n\nDear ${tenant},\n\nThis letter confirms the return of your security deposit.\n\nSecurity Deposit Paid:  $${dep.toFixed(2)}\n${ded>0?`Deductions:             $${ded.toFixed(2)}\n${reasons?reasons.split('\n').map(r=>'  - '+r).join('\n'):''}`:''}\nTotal Refund Amount:    $${refund.toFixed(2)}\n\n${refund>0?`A check for $${refund.toFixed(2)} will be mailed to your forwarding address within 30 days of your move-out date.`:'Based on the itemized deductions above, no refund is owed.'}\n\nSincerely,\nLK Property Group\nadmin@lkpropertygroup.com`;
+    text=`SECURITY DEPOSIT RETURN LETTER\n\nDate: ${td}\n\nTo: ${tenant}\nRe: Security Deposit Return - ${prop}\n\nDear ${tenant},\n\nThis letter confirms the return of your security deposit.\n\nSecurity Deposit Paid:  $${dep.toFixed(2)}\n${ded>0?`Deductions:             $${ded.toFixed(2)}\n${reasons?reasons.split('\n').map(r=>'  - '+r).join('\n'):''}`:''}\nTotal Refund Amount:    $${refund.toFixed(2)}\n\n${refund>0?`A check for $${refund.toFixed(2)} will be mailed to your forwarding address within 30 days of your move-out date.`:'Based on the itemized deductions above, no refund is owed.'}\n\nSincerely,\nLK Property Group\nadmin@lkpropertygroup.com`;
   } else if(type==='moveout-notice'){
     const prop=document.getElementById('ai-mo-prop').value||'[Property]';
     const tenant=document.getElementById('ai-mo-tenant').value||'[Tenant Name]';
     const dt=document.getElementById('ai-mo-date').value||'[Move-Out Date]';
     const dep=document.getElementById('ai-mo-deposit').value||'[Deposit Amount]';
-    text=`MOVE-OUT INSTRUCTIONS\n\nDate: ${td}\n\nTo: ${tenant}\nProperty: ${prop}\nMove-Out Date: ${dt}\n\nDear ${tenant},\n\nPlease follow these instructions for a smooth move-out.\n\nBEFORE YOU LEAVE:\n☐ Clean all rooms thoroughly\n☐ Clean inside all appliances\n☐ Remove ALL personal belongings\n☐ Patch nail holes and clean scuff marks\n☐ Return all keys, fobs, mailbox keys, and remotes\n☐ Cancel or transfer utilities in your name\n\nSECURITY DEPOSIT:\nYour deposit of $${dep} will be returned within 30 days after move-out, minus any deductions for damages beyond normal wear and tear.\n\nPlease schedule a move-out walkthrough: admin@lkpropertygroup.com\n\nSincerely,\nLK Property Group\nadmin@lkpropertygroup.com`;
+    text=`MOVE-OUT INSTRUCTIONS\n\nDate: ${td}\n\nTo: ${tenant}\nProperty: ${prop}\nMove-Out Date: ${dt}\n\nDear ${tenant},\n\nPlease follow these instructions for a smooth move-out.\n\nBEFORE YOU LEAVE:\n[ ]Clean all rooms thoroughly\n[ ]Clean inside all appliances\n[ ]Remove ALL personal belongings\n[ ]Patch nail holes and clean scuff marks\n[ ]Return all keys, fobs, mailbox keys, and remotes\n[ ]Cancel or transfer utilities in your name\n\nSECURITY DEPOSIT:\nYour deposit of $${dep} will be returned within 30 days after move-out, minus any deductions for damages beyond normal wear and tear.\n\nPlease schedule a move-out walkthrough: admin@lkpropertygroup.com\n\nSincerely,\nLK Property Group\nadmin@lkpropertygroup.com`;
   } else if(type==='maint-notice'){
     const prop=document.getElementById('ai-mn-prop').value||'[Property]';
     const tenant=document.getElementById('ai-mn-tenant').value||'[Tenant Name]';
@@ -1149,13 +1148,13 @@ function generateAi(type){
     const tenant=document.getElementById('ai-wl-tenant').value||'[Tenant Name]';
     const dt=document.getElementById('ai-wl-date').value||'[Move-In Date]';
     const rent=document.getElementById('ai-wl-rent').value||'[Rent]';
-    text=`WELCOME LETTER\n\nDate: ${td}\n\nDear ${tenant},\n\nWelcome to your new home at ${prop}! We are so excited to have you as part of the LK Property Group community.\n\nYOUR LEASE DETAILS:\nMove-In Date: ${dt}\nMonthly Rent: $${rent} (due on the 1st of each month)\n\nIMPORTANT CONTACTS:\nManagement: admin@lkpropertygroup.com\nMaintenance Requests: admin@lkpropertygroup.com (include photos)\n\nQUICK REMINDERS:\n• Rent is due on the 1st — grace period until the 5th\n• Report maintenance issues promptly\n• Renters insurance is strongly recommended\n• Review your lease for all community policies\n\nWe are committed to being responsive landlords. Don't hesitate to reach out!\n\nWarmly,\nLK Property Group\nadmin@lkpropertygroup.com`;
+    text=`WELCOME LETTER\n\nDate: ${td}\n\nDear ${tenant},\n\nWelcome to your new home at ${prop}! We are so excited to have you as part of the LK Property Group community.\n\nYOUR LEASE DETAILS:\nMove-In Date: ${dt}\nMonthly Rent: $${rent} (due on the 1st of each month)\n\nIMPORTANT CONTACTS:\nManagement: admin@lkpropertygroup.com\nMaintenance Requests: admin@lkpropertygroup.com (include photos)\n\nQUICK REMINDERS:\n- Rent is due on the 1st -- grace period until the 5th\n- Report maintenance issues promptly\n- Renters insurance is strongly recommended\n- Review your lease for all community policies\n\nWe are committed to being responsive landlords. Don't hesitate to reach out!\n\nWarmly,\nLK Property Group\nadmin@lkpropertygroup.com`;
   }
   document.getElementById('ai-output-text').value=text;
   document.getElementById('ai-output').style.display='block';
   document.getElementById('ai-output').scrollIntoView({behavior:'smooth'});
 }
-function copyAiOutput(){navigator.clipboard.writeText(document.getElementById('ai-output-text').value).then(()=>showToast('📋 Copied to clipboard!'));}
+function copyAiOutput(){navigator.clipboard.writeText(document.getElementById('ai-output-text').value).then(()=>showToast('Copied to clipboard!'));}
 
 // ── property selects ──────────────────────────────────────
 function loadPropertySelects() {
@@ -1616,7 +1615,9 @@ def api_delete_bill(bid):
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
+# Always initialise DB — runs whether started by gunicorn or python app.py
+setup_database()
+
 if __name__ == "__main__":
-    setup_database()
-    webbrowser.open("http://127.0.0.1:5000")
-    app.run(debug=False, port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=False, host="0.0.0.0", port=port)
